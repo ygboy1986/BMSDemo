@@ -1,0 +1,371 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A00000000000000000000001 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* main.m */; };
+		A00000000000000000000002 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000003 /* AppDelegate.m */; };
+		A00000000000000000000003 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000005 /* SceneDelegate.m */; };
+		A00000000000000000000004 /* BMSModbusCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000008 /* BMSModbusCodec.m */; };
+		A00000000000000000000005 /* BMSBLEConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000C /* BMSBLEConfiguration.m */; };
+		A00000000000000000000006 /* BMSBLETransport.m in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000E /* BMSBLETransport.m */; };
+		A00000000000000000000007 /* BMSMockTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000010 /* BMSMockTransport.m */; };
+		A00000000000000000000008 /* BMSClient.m in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000012 /* BMSClient.m */; };
+		A00000000000000000000009 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000014 /* ViewController.m */; };
+		A0000000000000000000000A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000000000000000000016 /* UIKit.framework */; };
+		A0000000000000000000000B /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000000000000000000017 /* CoreBluetooth.framework */; };
+		A0000000000000000000000C /* BMSRealtimeData.m in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000019 /* BMSRealtimeData.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B10000000000000000000001 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		B10000000000000000000002 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		B10000000000000000000003 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		B10000000000000000000004 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
+		B10000000000000000000005 /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
+		B10000000000000000000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B10000000000000000000007 /* BMSModbusCodec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BMSModbusCodec.h; sourceTree = "<group>"; };
+		B10000000000000000000008 /* BMSModbusCodec.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BMSModbusCodec.m; sourceTree = "<group>"; };
+		B10000000000000000000009 /* BMSByteTransport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BMSByteTransport.h; sourceTree = "<group>"; };
+		B1000000000000000000000B /* BMSBLEConfiguration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BMSBLEConfiguration.h; sourceTree = "<group>"; };
+		B1000000000000000000000C /* BMSBLEConfiguration.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BMSBLEConfiguration.m; sourceTree = "<group>"; };
+		B1000000000000000000000D /* BMSBLETransport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BMSBLETransport.h; sourceTree = "<group>"; };
+		B1000000000000000000000E /* BMSBLETransport.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BMSBLETransport.m; sourceTree = "<group>"; };
+		B1000000000000000000000F /* BMSMockTransport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BMSMockTransport.h; sourceTree = "<group>"; };
+		B10000000000000000000010 /* BMSMockTransport.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BMSMockTransport.m; sourceTree = "<group>"; };
+		B10000000000000000000011 /* BMSClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BMSClient.h; sourceTree = "<group>"; };
+		B10000000000000000000012 /* BMSClient.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BMSClient.m; sourceTree = "<group>"; };
+		B10000000000000000000013 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		B10000000000000000000014 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		B10000000000000000000015 /* BMSModbusDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BMSModbusDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000000000000000000016 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		B10000000000000000000017 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
+		B10000000000000000000018 /* BMSRealtimeData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BMSRealtimeData.h; sourceTree = "<group>"; };
+		B10000000000000000000019 /* BMSRealtimeData.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BMSRealtimeData.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C20000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A0000000000000000000000A /* UIKit.framework in Frameworks */,
+				A0000000000000000000000B /* CoreBluetooth.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D30000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				D30000000000000000000002 /* BMSModbusDemo */,
+				D30000000000000000000007 /* Products */,
+				D30000000000000000000008 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		D30000000000000000000002 /* BMSModbusDemo */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000001 /* main.m */,
+				B10000000000000000000002 /* AppDelegate.h */,
+				B10000000000000000000003 /* AppDelegate.m */,
+				B10000000000000000000004 /* SceneDelegate.h */,
+				B10000000000000000000005 /* SceneDelegate.m */,
+				B10000000000000000000006 /* Info.plist */,
+				D30000000000000000000003 /* Protocol */,
+				D30000000000000000000004 /* Transport */,
+				D30000000000000000000005 /* Client */,
+				D30000000000000000000006 /* UI */,
+			);
+			path = BMSModbusDemo;
+			sourceTree = "<group>";
+		};
+		D30000000000000000000003 /* Protocol */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000007 /* BMSModbusCodec.h */,
+				B10000000000000000000008 /* BMSModbusCodec.m */,
+			);
+			path = Protocol;
+			sourceTree = "<group>";
+		};
+		D30000000000000000000004 /* Transport */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000009 /* BMSByteTransport.h */,
+				B1000000000000000000000B /* BMSBLEConfiguration.h */,
+				B1000000000000000000000C /* BMSBLEConfiguration.m */,
+				B1000000000000000000000D /* BMSBLETransport.h */,
+				B1000000000000000000000E /* BMSBLETransport.m */,
+				B1000000000000000000000F /* BMSMockTransport.h */,
+				B10000000000000000000010 /* BMSMockTransport.m */,
+			);
+			path = Transport;
+			sourceTree = "<group>";
+		};
+		D30000000000000000000005 /* Client */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000018 /* BMSRealtimeData.h */,
+				B10000000000000000000019 /* BMSRealtimeData.m */,
+				B10000000000000000000011 /* BMSClient.h */,
+				B10000000000000000000012 /* BMSClient.m */,
+			);
+			path = Client;
+			sourceTree = "<group>";
+		};
+		D30000000000000000000006 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000013 /* ViewController.h */,
+				B10000000000000000000014 /* ViewController.m */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		D30000000000000000000007 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000015 /* BMSModbusDemo.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D30000000000000000000008 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000016 /* UIKit.framework */,
+				B10000000000000000000017 /* CoreBluetooth.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E40000000000000000000001 /* BMSModbusDemo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F50000000000000000000002 /* Build configuration list for PBXNativeTarget "BMSModbusDemo" */;
+			buildPhases = (
+				C20000000000000000000002 /* Sources */,
+				C20000000000000000000001 /* Frameworks */,
+				C20000000000000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BMSModbusDemo;
+			productName = BMSModbusDemo;
+			productReference = B10000000000000000000015 /* BMSModbusDemo.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E40000000000000000000002 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					E40000000000000000000001 = {
+						CreatedOnToolsVersion = 26.3;
+					};
+				};
+			};
+			buildConfigurationList = F50000000000000000000001 /* Build configuration list for PBXProject "BMSModbusDemo" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D30000000000000000000001;
+			productRefGroup = D30000000000000000000007 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E40000000000000000000001 /* BMSModbusDemo */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C20000000000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C20000000000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000000000000000000001 /* main.m in Sources */,
+				A00000000000000000000002 /* AppDelegate.m in Sources */,
+				A00000000000000000000003 /* SceneDelegate.m in Sources */,
+				A00000000000000000000004 /* BMSModbusCodec.m in Sources */,
+				A00000000000000000000005 /* BMSBLEConfiguration.m in Sources */,
+				A00000000000000000000006 /* BMSBLETransport.m in Sources */,
+				A00000000000000000000007 /* BMSMockTransport.m in Sources */,
+				A00000000000000000000008 /* BMSClient.m in Sources */,
+				A00000000000000000000009 /* ViewController.m in Sources */,
+				A0000000000000000000000C /* BMSRealtimeData.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		F60000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		F60000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F60000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = ZQ6UPQ9SDP;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BMSModbusDemo/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.demo.BMSModbusDemo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F60000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = ZQ6UPQ9SDP;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BMSModbusDemo/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.demo.BMSModbusDemo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F50000000000000000000001 /* Build configuration list for PBXProject "BMSModbusDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F60000000000000000000001 /* Debug */,
+				F60000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F50000000000000000000002 /* Build configuration list for PBXNativeTarget "BMSModbusDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F60000000000000000000003 /* Debug */,
+				F60000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E40000000000000000000002 /* Project object */;
+}

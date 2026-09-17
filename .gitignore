@@ -1,0 +1,15 @@
+# macOS / Xcode 本机状态
+.DS_Store
+xcuserdata/
+*.xcuserstate
+
+# 编译产物
+build/
+DerivedData/
+*.ipa
+*.dSYM/
+
+# 实机诊断日志及签名文件不上传
+*.log
+*.p12
+*.mobileprovision
