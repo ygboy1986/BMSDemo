@@ -19,6 +19,11 @@
 static const uint16_t BMSRealtimeStartRegister = 0x0060;
 static const uint16_t BMSRealtimeRegisterCount = 86;
 
+- (void)cancelPendingRequest {
+    self.requestGeneration++;
+    [self finishWithResult:nil error:[self errorWithCode:45 message:@"设备连接已改变，请重新读取"]];
+}
+
 - (BOOL)isBusy { return self.pendingCompletion != nil; }
 
 - (void)readDeviceInformation:(BMSClientCompletion)completion {
@@ -64,6 +69,28 @@ static const uint16_t BMSRealtimeRegisterCount = 86;
     return items;
 }
 
+- (void)logCommonParameterValues:(NSArray<NSDictionary *> *)items {
+    // 原始响应已由 consumeData 记录；本块只在完整响应通过 CRC 并解析成功后输出。
+    NSMutableArray<NSString *> *lines = NSMutableArray.array;
+    [lines addObject:@"【参数解析开始】功能码=0x04，起始=D300(0x012C)，数量=42，CRC已通过；以下按当前App协议表解释，供硬件工程师核对"];
+    [lines addObject:@"【字节位置说明】完整响应从0开始计数；前4字节为地址/功能码/两字节长度；寄存器按高字节在前解析，不含CRC"];
+    NSDictionary *typeItem = items[36];
+    uint16_t type = [typeItem[@"raw"] unsignedShortValue];
+    NSString *typeName = type == 0 ? @"三元锂" : (type == 1 ? @"磷酸铁锂" : @"未知类型（当前协议映射未定义，不能认定为测试）");
+    [lines addObject:[NSString stringWithFormat:@"【电芯类型解析】D336(0x0150)，完整响应字节[76..77]=%02X %02X，数据区偏移=72；原始值=0x%04X，十进制=%u，当前映射=%@；已定义：0=三元锂、1=磷酸铁锂；测试编码待硬件确认", type >> 8, type & 0xFF, type, type, typeName]];
+    for (NSDictionary *item in items) {
+        NSUInteger address = [item[@"address"] unsignedIntegerValue];
+        NSUInteger byteOffset = 4 + (address - 300) * 2;
+        uint16_t raw = [item[@"raw"] unsignedShortValue];
+        NSString *unit = [item[@"unit"] length] ? item[@"unit"] : @"无单位";
+        NSString *status = [item[@"valid"] boolValue] ? @"在当前协议范围内" : @"超出当前协议范围（保留原始值，请硬件确认）";
+        [lines addObject:[NSString stringWithFormat:@"D%lu(0x%04lX) %@ | 字节[%lu..%lu]=%02X %02X | 原始=%u(0x%04X) | 换算=%u×%.6g%+.6g=%@ %@ | 原始范围=%@~%@ | %@", (unsigned long)address, (unsigned long)address, item[@"name"], (unsigned long)byteOffset, (unsigned long)byteOffset+1, raw >> 8, raw & 0xFF, raw, raw, raw, [item[@"scale"] doubleValue], [item[@"offset"] doubleValue], item[@"value"], unit, item[@"min"], item[@"max"], status]];
+    }
+    [lines addObject:@"【未确认字段】过流/延时档位尚无A/ms换算表；部分恢复延时及均衡关闭压差未定义，不从其他寄存器猜值。标定容量展示为D338的Ah值×1000 mAh。"];
+    [lines addObject:@"【参数解析结束】以上均来自本次设备响应；类型选择器中的待应用类型不参与本日志解析"];
+    [self log:[lines componentsJoinedByString:@"\n"]];
+}
+
 - (void)readCommonParameters:(BMSClientCompletion)completion {
     [self readRunningParametersFrom:300 count:42 completion:^(NSArray *words, NSError *error) {
         if (error) { completion(nil,error); return; }
@@ -76,6 +103,7 @@ static const uint16_t BMSRealtimeRegisterCount = 86;
             item[@"valid"] = @([words[i] integerValue]>=[item[@"min"] integerValue] && [words[i] integerValue]<=[item[@"max"] integerValue]);
             [result addObject:item];
         }
+        [self logCommonParameterValues:result];
         completion(result,nil);
     }];
 }
@@ -95,6 +123,25 @@ static const uint16_t BMSRealtimeRegisterCount = 86;
             if (readError) { completion(nil,readError); return; }
             if ([words[0] unsignedShortValue]!=word) { completion(nil,[weakSelf errorWithCode:42 message:@"写入后回读不一致，请重新读取设备参数"]); return; }
             completion(@(value),nil);
+        }];
+    }];
+}
+
+- (void)changeBatteryType:(NSInteger)type completion:(BMSClientCompletion)completion {
+    if (type != 0 && type != 1) {
+        completion(nil, [self errorWithCode:46 message:@"测试类型的设备写入编码尚未确认，请提供原 APP 切换时的写入与返回报文"]); return;
+    }
+    if (!self.transport.isConnected) { completion(nil, [self errorWithCode:47 message:@"请先连接真实蓝牙设备"]); return; }
+    __weak typeof(self) weakSelf = self;
+    [self writeCommonParameterAt:336 engineeringValue:type completion:^(id value, NSError *error) {
+        if (error) { completion(nil, error); return; }
+        [weakSelf readCommonParameters:^(NSArray *parameters, NSError *readError) {
+            if (readError) { completion(nil, readError); return; }
+            NSDictionary *batteryType = parameters[36];
+            if ([batteryType[@"raw"] integerValue] != type) {
+                completion(nil, [weakSelf errorWithCode:48 message:@"完整参数回读的电芯类型不一致，请重新读取设备确认"]); return;
+            }
+            completion(parameters, nil);
         }];
     }];
 }

@@ -46,6 +46,7 @@
 }
 
 - (void)connect {
+    if (self.peripheral) { [self disconnect]; }
     self.scanRequested = YES;
     if (self.central.state != CBManagerStatePoweredOn) {
         [self publishState:NO message:@"等待系统蓝牙就绪…"];
@@ -78,7 +79,7 @@
 }
 
 - (void)connectToDevice:(BMSBLEDevice *)device {
-    if (self.connecting) {
+    if (self.connecting || (self.peripheral && !self.connected)) {
         [self publishState:NO message:@"正在连接设备，请稍候…"];
         return;
     }
@@ -158,7 +159,10 @@
         if (self.scanRequested) { [self beginScan]; }
         else { [self publishState:NO message:@"蓝牙可用，点击扫描设备"] ; }
     } else {
-        self.connected = NO;
+        self.connected = NO; self.connecting = NO; self.scanning = NO;
+        self.peripheral = nil; self.writeCharacteristic = nil; self.notifyCharacteristic = nil;
+        [self.pendingWriteChunks removeAllObjects];
+        self.gattDiscoveryGeneration++; self.scanGeneration++;
         [self publishState:NO message:@"系统蓝牙不可用"];
     }
 }
@@ -191,6 +195,7 @@
 }
 
 - (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral {
+    if (peripheral != self.peripheral) { return; }
     self.connecting = NO;
     [self publishState:NO message:[NSString stringWithFormat:@"已连接 %@，正在发现服务…", peripheral.name ?: @"设备"]];
     self.gattDiscoveryGeneration += 1;
@@ -207,12 +212,16 @@
 }
 
 - (void)centralManager:(CBCentralManager *)central didFailToConnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
+    if (peripheral != self.peripheral) { return; }
     self.connecting = NO;
+    self.peripheral = nil;
     [self publishError:error.localizedDescription ?: @"蓝牙连接失败" code:11];
 }
 
 - (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
+    if (peripheral != self.peripheral) { return; }
     self.connecting = NO;
+    self.peripheral = nil;
     self.connected = NO;
     self.writeCharacteristic = nil;
     self.notifyCharacteristic = nil;
@@ -226,6 +235,7 @@
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error {
+    if (peripheral != self.peripheral) { return; }
     if (error) { [self publishError:error.localizedDescription code:12]; return; }
     if (peripheral.services.count == 0) {
         [self publishError:@"设备已连接，但未返回任何 GATT 服务" code:16];
@@ -245,6 +255,7 @@
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error {
+    if (peripheral != self.peripheral) { return; }
     self.pendingCharacteristicDiscoveries = MAX(0, self.pendingCharacteristicDiscoveries - 1);
     if (error) {
         if (self.pendingCharacteristicDiscoveries == 0) { [self finishCharacteristicDiscoveryForPeripheral:peripheral]; }
@@ -273,6 +284,7 @@
 }
 
 - (void)finishCharacteristicDiscoveryForPeripheral:(CBPeripheral *)peripheral {
+    if (peripheral != self.peripheral) { return; }
     BOOL usedAutomaticDetection = NO;
     if ((!self.writeCharacteristic || !self.notifyCharacteristic) &&
         self.configuration.automaticallyDetectUARTCharacteristics && self.fallbackCharacteristicPairs.count) {
@@ -299,6 +311,7 @@
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
+    if (peripheral != self.peripheral) { return; }
     if (error) { [self publishError:[NSString stringWithFormat:@"启用通知失败：%@", error.localizedDescription] code:20]; return; }
     if (characteristic != self.notifyCharacteristic || !characteristic.isNotifying) { return; }
     NSUInteger generation = self.gattDiscoveryGeneration;
@@ -320,6 +333,7 @@
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
+    if (peripheral != self.peripheral) { return; }
     if (error) {
         [self.pendingWriteChunks removeAllObjects];
         [self publishError:[NSString stringWithFormat:@"蓝牙写入失败：%@", error.localizedDescription] code:21];
@@ -329,10 +343,12 @@
 }
 
 - (void)peripheralIsReadyToSendWriteWithoutResponse:(CBPeripheral *)peripheral {
+    if (peripheral != self.peripheral) { return; }
     [self sendPendingWriteChunks];
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
+    if (peripheral != self.peripheral) { return; }
     if (error) { [self publishError:error.localizedDescription code:14]; return; }
     if (characteristic.value.length && self.receiveHandler) { self.receiveHandler(characteristic.value); }
 }

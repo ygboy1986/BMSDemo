@@ -27,6 +27,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readonly) NSArray *cellVoltages;
 @property (nonatomic, copy, readonly) NSArray *probeTemperatures;
 @property (nonatomic, copy, readonly) NSString *detailText;
+/// 监控页文本；无效值显示“—”，串数仅采用设备 D335，不按非零电压猜测。
+- (NSDictionary<NSString *, NSString *> *)monitorValuesForCellCount:(nullable NSNumber *)cellCount;
+- (NSString *)balanceTextForCell:(NSUInteger)index;
+- (NSArray<NSDictionary<NSString *, NSString *> *> *)alarmRows;
+@property (nonatomic, copy, readonly) NSString *diagnosticText;
 - (nullable instancetype)initWithFullRegisters:(NSArray<NSNumber *> *)registers error:(NSError **)error;
 
 /// 解析从 0x008E 开始、连续 40 个寄存器的 0x04 响应值。

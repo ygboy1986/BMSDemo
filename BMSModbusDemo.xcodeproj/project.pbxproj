@@ -19,6 +19,10 @@
 		A0000000000000000000000A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000000000000000000016 /* UIKit.framework */; };
 		A0000000000000000000000B /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000000000000000000017 /* CoreBluetooth.framework */; };
 		A0000000000000000000000C /* BMSRealtimeData.m in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000019 /* BMSRealtimeData.m */; };
+		A00000000000000000000021 /* BMSProductViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* BMSProductViewController.m */; };
+		A00000000000000000000023 /* BMSBatteryProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000023 /* BMSBatteryProfile.m */; };
+		A00000000000000000000025 /* BMSMonitorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000025 /* BMSMonitorViewController.m */; };
+		A00000000000000000000027 /* BMSFunctionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000027 /* BMSFunctionsViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,6 +50,14 @@
 		B10000000000000000000017 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		B10000000000000000000018 /* BMSRealtimeData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BMSRealtimeData.h; sourceTree = "<group>"; };
 		B10000000000000000000019 /* BMSRealtimeData.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BMSRealtimeData.m; sourceTree = "<group>"; };
+		B10000000000000000000020 /* BMSProductViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BMSProductViewController.h; sourceTree = "<group>"; };
+		B10000000000000000000021 /* BMSProductViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BMSProductViewController.m; sourceTree = "<group>"; };
+		B10000000000000000000022 /* BMSBatteryProfile.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BMSBatteryProfile.h; sourceTree = "<group>"; };
+		B10000000000000000000023 /* BMSBatteryProfile.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BMSBatteryProfile.m; sourceTree = "<group>"; };
+		B10000000000000000000024 /* BMSMonitorViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BMSMonitorViewController.h; sourceTree = "<group>"; };
+		B10000000000000000000025 /* BMSMonitorViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BMSMonitorViewController.m; sourceTree = "<group>"; };
+		B10000000000000000000026 /* BMSFunctionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BMSFunctionsViewController.h; sourceTree = "<group>"; };
+		B10000000000000000000027 /* BMSFunctionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BMSFunctionsViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +136,14 @@
 		D30000000000000000000006 /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				B10000000000000000000026 /* BMSFunctionsViewController.h */,
+				B10000000000000000000027 /* BMSFunctionsViewController.m */,
+				B10000000000000000000024 /* BMSMonitorViewController.h */,
+				B10000000000000000000025 /* BMSMonitorViewController.m */,
+				B10000000000000000000020 /* BMSProductViewController.h */,
+				B10000000000000000000021 /* BMSProductViewController.m */,
+				B10000000000000000000022 /* BMSBatteryProfile.h */,
+				B10000000000000000000023 /* BMSBatteryProfile.m */,
 				B10000000000000000000013 /* ViewController.h */,
 				B10000000000000000000014 /* ViewController.m */,
 			);
@@ -222,6 +242,10 @@
 				A00000000000000000000006 /* BMSBLETransport.m in Sources */,
 				A00000000000000000000007 /* BMSMockTransport.m in Sources */,
 				A00000000000000000000008 /* BMSClient.m in Sources */,
+				A00000000000000000000027 /* BMSFunctionsViewController.m in Sources */,
+				A00000000000000000000025 /* BMSMonitorViewController.m in Sources */,
+				A00000000000000000000021 /* BMSProductViewController.m in Sources */,
+				A00000000000000000000023 /* BMSBatteryProfile.m in Sources */,
 				A00000000000000000000009 /* ViewController.m in Sources */,
 				A0000000000000000000000C /* BMSRealtimeData.m in Sources */,
 			);
@@ -306,7 +330,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = ZQ6UPQ9SDP;
+				DEVELOPMENT_TEAM = 8ZQUJ3WZBX;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BMSModbusDemo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -328,7 +352,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = ZQ6UPQ9SDP;
+				DEVELOPMENT_TEAM = 8ZQUJ3WZBX;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BMSModbusDemo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

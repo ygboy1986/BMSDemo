@@ -1,35 +1,35 @@
 #import "ViewController.h"
+#import "BMSProductViewController.h"
+#import "BMSMonitorViewController.h"
+#import "BMSFunctionsViewController.h"
 #import "../Client/BMSClient.h"
-#import "../Transport/BMSMockTransport.h"
 #import "../Transport/BMSBLETransport.h"
 #import "../Transport/BMSBLEConfiguration.h"
 
+@interface BMSNavigationController : UINavigationController
+@end
+@implementation BMSNavigationController
+- (UIStatusBarStyle)preferredStatusBarStyle { return UIStatusBarStyleLightContent; }
+@end
+
 @interface ViewController ()
+@property (nonatomic, copy) NSString *selectedDeviceName;
+@property (nonatomic, strong) BMSProductViewController *productController;
+@property (nonatomic, strong) BMSMonitorViewController *monitorController;
+@property (nonatomic, strong) UIViewController *diagnosticsController;
+@property (nonatomic, strong) BMSFunctionsViewController *functionsController;
+@property (nonatomic, strong) UIStackView *historyStack;
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) UIStackView *stackView;
-@property (nonatomic, strong) UISegmentedControl *modeControl;
 @property (nonatomic, strong) UILabel *statusLabel;
 @property (nonatomic, strong) UIButton *connectionButton;
 @property (nonatomic, strong) UILabel *deviceListTitle;
 @property (nonatomic, strong) UIStackView *deviceListStack;
 @property (nonatomic, copy) NSArray<BMSBLEDevice *> *nearbyDevices;
-@property (nonatomic, strong) UILabel *voltageLabel;
-@property (nonatomic, strong) UILabel *currentLabel;
-@property (nonatomic, strong) UILabel *socLabel;
-@property (nonatomic, strong) UILabel *realtimeTitle;
-@property (nonatomic, strong) UILabel *mosLabel;
-@property (nonatomic, strong) UILabel *temperatureLabel;
-@property (nonatomic, strong) UILabel *alarmLabel;
-@property (nonatomic, strong) UIButton *readDataButton;
 @property (nonatomic, strong) UITextView *logView;
 @property (nonatomic, strong) NSURL *logFileURL;
 @property (nonatomic, strong) NSDateFormatter *logDateFormatter;
 @property (nonatomic, strong) BMSClient *client;
-@property (nonatomic, strong) NSTimer *refreshTimer;
-@property (nonatomic, strong) UISwitch *autoRefreshSwitch;
-@property (nonatomic, strong) UILabel *detailLabel;
-@property (nonatomic, strong) UILabel *informationLabel;
-@property (nonatomic, strong) UILabel *parameterLabel;
 @property (nonatomic, strong) UILabel *historyLabel;
 @end
 
@@ -39,38 +39,97 @@
     [super viewDidLoad];
     self.title = @"BMS 数据监控";
     self.view.backgroundColor = [UIColor colorWithWhite:0.96 alpha:1];
+    [self buildTabs];
     [self buildUI];
     [self preparePersistentLog];
     [self rebuildClient];
 }
 
-- (void)dealloc { [self.refreshTimer invalidate]; }
+
+- (UIStackView *)pageStack:(UIViewController *)controller {
+    controller.view.backgroundColor = [UIColor colorWithWhite:0.97 alpha:1];
+    UIScrollView *scroll = [UIScrollView new]; scroll.translatesAutoresizingMaskIntoConstraints = NO;
+    [controller.view addSubview:scroll];
+    UIStackView *stack = [UIStackView new]; stack.axis = UILayoutConstraintAxisVertical; stack.spacing = 14; stack.translatesAutoresizingMaskIntoConstraints = NO;
+    [scroll addSubview:stack];
+    [NSLayoutConstraint activateConstraints:@[
+        [scroll.topAnchor constraintEqualToAnchor:controller.view.safeAreaLayoutGuide.topAnchor], [scroll.bottomAnchor constraintEqualToAnchor:controller.view.safeAreaLayoutGuide.bottomAnchor],
+        [scroll.leadingAnchor constraintEqualToAnchor:controller.view.leadingAnchor], [scroll.trailingAnchor constraintEqualToAnchor:controller.view.trailingAnchor],
+        [stack.topAnchor constraintEqualToAnchor:scroll.contentLayoutGuide.topAnchor constant:16], [stack.bottomAnchor constraintEqualToAnchor:scroll.contentLayoutGuide.bottomAnchor constant:-20],
+        [stack.leadingAnchor constraintEqualToAnchor:scroll.frameLayoutGuide.leadingAnchor constant:16], [stack.trailingAnchor constraintEqualToAnchor:scroll.frameLayoutGuide.trailingAnchor constant:-16]
+    ]]; return stack;
+}
+
+- (void)buildTabs {
+    self.overrideUserInterfaceStyle = UIUserInterfaceStyleLight;
+    self.productController = [BMSProductViewController new];
+    self.monitorController = [BMSMonitorViewController new];
+    self.diagnosticsController = [UIViewController new]; self.diagnosticsController.title = @"设备与日志";
+    self.functionsController = [BMSFunctionsViewController new];
+    UIViewController *firmware = [UIViewController new];
+    UIViewController *history = [UIViewController new];
+    NSArray *pages = @[self.productController,self.monitorController,self.functionsController,firmware,history];
+    NSArray *titles = @[@"产品信息",@"数据监控",@"设备功能",@"固件升级",@"历史数据"];
+    NSArray *icons = @[@"shippingbox.fill",@"chart.bar.fill",@"internaldrive.fill",@"arrow.up.doc.fill",@"clock.arrow.circlepath"];
+    NSMutableArray *controllers = NSMutableArray.array;
+    UIColor *blue = [UIColor colorWithRed:0.035 green:0.40 blue:0.93 alpha:1];
+    for (NSUInteger i=0; i<pages.count; i++) {
+        UIViewController *page = pages[i]; page.title = titles[i];
+        UINavigationController *navigation = [[BMSNavigationController alloc] initWithRootViewController:page];
+        navigation.tabBarItem = [[UITabBarItem alloc] initWithTitle:titles[i] image:[UIImage systemImageNamed:icons[i]] tag:i];
+        UINavigationBarAppearance *appearance = [UINavigationBarAppearance new]; [appearance configureWithOpaqueBackground]; appearance.backgroundColor = blue;
+        appearance.titleTextAttributes = @{NSForegroundColorAttributeName:UIColor.whiteColor, NSFontAttributeName:[UIFont systemFontOfSize:17 weight:UIFontWeightMedium]};
+        navigation.navigationBar.standardAppearance = appearance; navigation.navigationBar.scrollEdgeAppearance = appearance; navigation.navigationBar.tintColor = UIColor.whiteColor;
+        [controllers addObject:navigation];
+    }
+    self.viewControllers = controllers;
+    UITabBarAppearance *tabs = [UITabBarAppearance new]; [tabs configureWithOpaqueBackground]; tabs.backgroundColor = [UIColor colorWithRed:0.985 green:0.977 blue:0.99 alpha:1];
+    self.tabBar.standardAppearance = tabs; self.tabBar.scrollEdgeAppearance = tabs; self.tabBar.tintColor = blue;
+    self.tabBar.unselectedItemTintColor = UIColor.systemGrayColor;
+    self.historyStack = [self pageStack:history];
+    UIStackView *firmwareStack = [self pageStack:firmware];
+    [firmwareStack addArrangedSubview:[self sectionTitle:@"固件升级"]];
+    [firmwareStack addArrangedSubview:[self label:@"固件升级功能待接入" size:17 weight:UIFontWeightMedium]];
+    [firmwareStack addArrangedSubview:[self label:@"当前版本暂不支持选择固件和执行升级。" size:14 weight:UIFontWeightRegular]];
+    __weak typeof(self) weakSelf = self;
+    void (^openDiagnostics)(void) = ^{
+        typeof(self) strongSelf = weakSelf;
+        if (!strongSelf) { return; }
+        BOOL switchingTab = strongSelf.selectedIndex != 1;
+        UINavigationController *navigation = (UINavigationController *)strongSelf.viewControllers[1];
+        if (navigation.topViewController != strongSelf.diagnosticsController) {
+            [navigation setViewControllers:@[strongSelf.monitorController, strongSelf.diagnosticsController] animated:!switchingTab];
+        }
+        if (switchingTab) { strongSelf.selectedIndex = 1; }
+    };
+    self.productController.connectionAction = ^{ openDiagnostics(); if (!weakSelf.client.transport.isConnected) { [weakSelf.client.transport connect]; } };
+    self.monitorController.connectionAction = openDiagnostics;
+    self.monitorController.logAction = openDiagnostics;
+    self.functionsController.connectionAction = openDiagnostics;
+}
 
 - (void)buildUI {
     self.scrollView = [[UIScrollView alloc] init];
     self.scrollView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:self.scrollView];
+    [self.diagnosticsController.view addSubview:self.scrollView];
     self.stackView = [[UIStackView alloc] init];
     self.stackView.axis = UILayoutConstraintAxisVertical;
     self.stackView.spacing = 14;
     self.stackView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.scrollView addSubview:self.stackView];
-    UILayoutGuide *safe = self.view.safeAreaLayoutGuide;
+    UILayoutGuide *safe = self.diagnosticsController.view.safeAreaLayoutGuide;
     [NSLayoutConstraint activateConstraints:@[
         [self.scrollView.topAnchor constraintEqualToAnchor:safe.topAnchor],
         [self.scrollView.leadingAnchor constraintEqualToAnchor:safe.leadingAnchor],
         [self.scrollView.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor],
-        [self.scrollView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+        [self.scrollView.bottomAnchor constraintEqualToAnchor:safe.bottomAnchor],
         [self.stackView.topAnchor constraintEqualToAnchor:self.scrollView.contentLayoutGuide.topAnchor constant:16],
         [self.stackView.leadingAnchor constraintEqualToAnchor:self.scrollView.frameLayoutGuide.leadingAnchor constant:16],
         [self.stackView.trailingAnchor constraintEqualToAnchor:self.scrollView.frameLayoutGuide.trailingAnchor constant:-16],
         [self.stackView.bottomAnchor constraintEqualToAnchor:self.scrollView.contentLayoutGuide.bottomAnchor constant:-20]
     ]];
 
-    self.modeControl = [[UISegmentedControl alloc] initWithItems:@[@"模拟数据", @"真实蓝牙"]];
-    self.modeControl.selectedSegmentIndex = 0;
-    [self.modeControl addTarget:self action:@selector(modeChanged) forControlEvents:UIControlEventValueChanged];
-    [self.stackView addArrangedSubview:self.modeControl];
+    [self.stackView addArrangedSubview:[self label:@"真实蓝牙 · 选择下方电池设备" size:15 weight:UIFontWeightMedium]];
 
     UIView *connectionCard = [self card];
     UIStackView *connectionStack = [self verticalStackIn:connectionCard];
@@ -90,59 +149,10 @@
     self.deviceListStack.hidden = YES;
     [self.stackView addArrangedSubview:self.deviceListStack];
 
-    self.realtimeTitle = [self sectionTitle:@"实时状态（模拟模式每10秒刷新）"];
-    [self.stackView addArrangedSubview:self.realtimeTitle];
-    UIStackView *metrics = [[UIStackView alloc] init];
-    metrics.axis = UILayoutConstraintAxisHorizontal;
-    metrics.distribution = UIStackViewDistributionFillEqually;
-    metrics.spacing = 8;
-    self.voltageLabel = [self metricCardWithTitle:@"总电压" initial:@"-- V" stack:metrics];
-    self.currentLabel = [self metricCardWithTitle:@"总电流" initial:@"-- A" stack:metrics];
-    self.socLabel = [self metricCardWithTitle:@"SOC" initial:@"-- %" stack:metrics];
-    [self.stackView addArrangedSubview:metrics];
+    [self.historyStack addArrangedSubview:[self button:@"读取历史" action:@selector(readHistoryTapped) color:UIColor.systemIndigoColor]];
 
-    UIStackView *actions = [[UIStackView alloc] init];
-    actions.axis = UILayoutConstraintAxisHorizontal;
-    actions.distribution = UIStackViewDistributionFillEqually;
-    actions.spacing = 8;
-    self.readDataButton = [self button:@"读取数据" action:@selector(readDataTapped) color:UIColor.systemBlueColor];
-    [actions addArrangedSubview:self.readDataButton];
-    [actions addArrangedSubview:[self button:@"读取历史" action:@selector(readHistoryTapped) color:UIColor.systemIndigoColor]];
-    [self.stackView addArrangedSubview:actions];
-
-    UIView *controlCard = [self card];
-    UIStackView *controlStack = [self verticalStackIn:controlCard];
-    [controlStack addArrangedSubview:[self sectionTitle:@"设备控制示例"]];
-    self.mosLabel = [self label:@"充电 MOS：未知" size:15 weight:UIFontWeightRegular];
-    [controlStack addArrangedSubview:self.mosLabel];
-    self.temperatureLabel = [self label:@"温度：未知" size:15 weight:UIFontWeightRegular];
-    [controlStack addArrangedSubview:self.temperatureLabel];
-    self.alarmLabel = [self label:@"报警：未知" size:15 weight:UIFontWeightRegular];
-    self.alarmLabel.textColor = UIColor.secondaryLabelColor;
-    [controlStack addArrangedSubview:self.alarmLabel];
-    UIStackView *mosActions = [[UIStackView alloc] init];
-    mosActions.axis = UILayoutConstraintAxisHorizontal;
-    mosActions.spacing = 8;
-    mosActions.distribution = UIStackViewDistributionFillEqually;
-    [mosActions addArrangedSubview:[self button:@"开启充电 MOS" action:@selector(openMOSTapped) color:UIColor.systemGreenColor]];
-    [mosActions addArrangedSubview:[self button:@"关闭充电 MOS" action:@selector(closeMOSTapped) color:UIColor.systemRedColor]];
-    [controlStack addArrangedSubview:mosActions];
-    [self.stackView addArrangedSubview:controlCard];
-
-    self.autoRefreshSwitch = [UISwitch new];
-    [self.autoRefreshSwitch addTarget:self action:@selector(refreshChanged) forControlEvents:UIControlEventValueChanged];
-    [self.stackView addArrangedSubview:[self label:@"自动刷新（10秒；忙碌时跳过，不自动重试）" size:14 weight:UIFontWeightRegular]];
-    [self.stackView addArrangedSubview:self.autoRefreshSwitch];
-    self.detailLabel = [self label:@"单体、温度、容量：未读取" size:13 weight:UIFontWeightRegular];
-    [self.stackView addArrangedSubview:self.detailLabel];
-    [self.stackView addArrangedSubview:[self button:@"读取设备信息" action:@selector(readInformationTapped) color:UIColor.systemBlueColor]];
-    self.informationLabel = [self label:@"设备信息：未读取" size:13 weight:UIFontWeightRegular];
-    [self.stackView addArrangedSubview:self.informationLabel];
-    [self.stackView addArrangedSubview:[self button:@"读取常规参数（只读）" action:@selector(readParametersTapped) color:UIColor.systemBlueColor]];
-    self.parameterLabel = [self label:@"常规参数：未读取" size:13 weight:UIFontWeightRegular];
-    [self.stackView addArrangedSubview:self.parameterLabel];
     self.historyLabel = [self label:@"历史记录：未读取" size:13 weight:UIFontWeightRegular];
-    [self.stackView addArrangedSubview:self.historyLabel];
+    [self.historyStack addArrangedSubview:self.historyLabel];
 
     UIStackView *logHeader = [[UIStackView alloc] init];
     logHeader.axis = UILayoutConstraintAxisHorizontal;
@@ -164,57 +174,40 @@
 }
 
 - (void)rebuildClient {
-    [self.refreshTimer invalidate];
-    self.autoRefreshSwitch.on = NO;
-    self.detailLabel.text = @"单体、温度、容量：未读取";
-    self.informationLabel.text = @"设备信息：未读取";
-    self.parameterLabel.text = @"常规参数：未读取";
     self.historyLabel.text = @"历史记录：未读取";
     self.client.transport.stateHandler = nil;
     [self.client.transport disconnect];
-    id<BMSByteTransport> transport = self.modeControl.selectedSegmentIndex == 0
-        ? (id<BMSByteTransport>)[[BMSMockTransport alloc] init]
-        : (id<BMSByteTransport>)[[BMSBLETransport alloc] initWithConfiguration:BMSBLEConfiguration.demoConfiguration];
-    BOOL realBluetooth = self.modeControl.selectedSegmentIndex == 1;
+    id<BMSByteTransport> transport = [[BMSBLETransport alloc] initWithConfiguration:BMSBLEConfiguration.demoConfiguration];
     self.client = [[BMSClient alloc] initWithTransport:transport];
-    // 实机保留5秒响应超时；诊断模式不会自动发送或自动重试。
-    if (realBluetooth) { self.client.responseTimeout = 5.0; }
+    self.selectedDeviceName = nil;
+    self.productController.client = self.client;
+    self.monitorController.client = self.client;
+    self.functionsController.client = self.client;
+    [self.productController resetDevice];
+    self.client.responseTimeout = 5.0;
     self.nearbyDevices = @[];
     [self updateDeviceList:@[]];
-    self.deviceListTitle.hidden = !realBluetooth;
-    self.deviceListStack.hidden = !realBluetooth;
-    [self.connectionButton setTitle:realBluetooth ? @"重新扫描" : @"连接设备" forState:UIControlStateNormal];
-    [self.readDataButton setTitle:@"读取实时数据" forState:UIControlStateNormal];
-    self.realtimeTitle.text = @"实时状态（可开启自动刷新）";
-    // 切换模式时清除上一台设备/模拟数据，避免将旧值误认为实机响应。
-    self.voltageLabel.text = @"-- V";
-    self.currentLabel.text = @"-- A";
-    self.socLabel.text = @"-- %";
-    self.mosLabel.text = @"MOS：未读取";
-    self.temperatureLabel.text = @"温度：未读取";
-    self.alarmLabel.text = @"报警：未读取";
-    self.alarmLabel.textColor = UIColor.secondaryLabelColor;
+    self.deviceListTitle.hidden = NO;
+    self.deviceListStack.hidden = NO;
+    [self.connectionButton setTitle:@"扫描设备" forState:UIControlStateNormal];
     __weak typeof(self) weakSelf = self;
     transport.stateHandler = ^(BOOL connected, NSString *message) {
+        if (connected) { weakSelf.productController.deviceName = weakSelf.selectedDeviceName; }
+        [weakSelf.productController connectionChanged:connected];
+        [weakSelf.monitorController connectionChanged:connected message:message];
+        [weakSelf.functionsController connectionChanged:connected message:message];
+        weakSelf.deviceListTitle.hidden = connected; weakSelf.deviceListStack.hidden = connected;
         weakSelf.statusLabel.text = message;
         weakSelf.statusLabel.textColor = connected ? UIColor.systemGreenColor : UIColor.systemOrangeColor;
         [weakSelf appendLog:[NSString stringWithFormat:@"BLE状态：%@", message]];
-        [weakSelf.connectionButton setTitle:connected ? @"断开设备" : (weakSelf.modeControl.selectedSegmentIndex == 1 ? @"重新扫描" : @"连接设备") forState:UIControlStateNormal];
+        [weakSelf.connectionButton setTitle:connected ? @"断开设备" : @"扫描设备" forState:UIControlStateNormal];
         if (!connected) {
-            weakSelf.autoRefreshSwitch.on = NO;
-            [weakSelf.refreshTimer invalidate];
-            weakSelf.refreshTimer = nil;
+            [weakSelf.client cancelPendingRequest];
+            [weakSelf clearDeviceReadings];
         }
         if (connected) {
-            [weakSelf.refreshTimer invalidate];
-            weakSelf.refreshTimer = nil;
-            if (weakSelf.modeControl.selectedSegmentIndex == 0) {
-                [weakSelf readDataTapped];
-                weakSelf.autoRefreshSwitch.on = YES;
-                [weakSelf refreshChanged];
-            } else {
-                [weakSelf appendLog:@"抓包适配版：点击“读取实时数据”发送01 04 00 60 00 56 70 2A；0x04响应按两字节长度组包，预期178字节"];
-            }
+            [weakSelf appendLog:@"已连接真实设备，自动读取产品信息及电池参数"];
+
         }
     };
     if ([transport isKindOfClass:BMSBLETransport.class]) {
@@ -224,14 +217,13 @@
         };
     }
     self.client.logHandler = ^(NSString *line) { [weakSelf appendLog:line]; };
-    self.statusLabel.text = self.modeControl.selectedSegmentIndex == 0 ? @"模拟模式就绪" : @"仅搜索 YT/QM 设备…";
+    self.statusLabel.text = @"请扫描并连接真实电池设备";
 }
 
-- (void)modeChanged {
-    [self rebuildClient];
-    // 选择真实蓝牙后立即开始扫描；若系统蓝牙尚未就绪，Transport 会在状态变为 PoweredOn 后继续。
-    if (self.modeControl.selectedSegmentIndex == 1) { [self.client.transport connect]; }
+- (void)clearDeviceReadings {
+    self.historyLabel.text = @"历史记录：未读取";
 }
+
 - (void)connectTapped { self.client.transport.isConnected ? [self.client.transport disconnect] : [self.client.transport connect]; }
 
 - (void)updateDeviceList:(NSArray<BMSBLEDevice *> *)devices {
@@ -274,6 +266,13 @@
         if ([device.identifier.UUIDString isEqualToString:sender.accessibilityIdentifier]) { selected = device; break; }
     }
     if (selected) {
+        if (self.client.transport.isConnected) {
+            [self showError:[NSError errorWithDomain:@"BMS.Connection" code:1 userInfo:@{NSLocalizedDescriptionKey:@"请先断开当前设备，再连接另一块电池"}]];
+            return;
+        }
+        [self.productController resetDevice];
+        self.selectedDeviceName = selected.name;
+        self.productController.deviceName = selected.name;
         [self appendLog:[NSString stringWithFormat:@"选择设备：%@，RSSI=%@，identifier=%@", selected.name, selected.RSSI, selected.identifier.UUIDString]];
         if (selected.RSSI.integerValue <= -90) {
             [self appendLog:@"警告：蓝牙信号弱于 -90 dBm，请将手机靠近设备后测试，弱信号可能造成连接超时"];
@@ -282,41 +281,8 @@
     }
 }
 
-- (void)readDataTapped {
-    if (![self requireConnection]) { return; }
-    if (self.client.isBusy) { return; }
-    BMSClient *requestClient = self.client;
-    __weak typeof(self) weakSelf = self;
-    if (self.modeControl.selectedSegmentIndex == 1) {
-        [self appendLog:@"按旧APP读取：起始0x0060，数量86，等待完整响应及CRC校验"];
-    }
-    [self.client readRealtimeData:^(BMSRealtimeData *data, NSError *error) {
-        if (weakSelf.client != requestClient) { return; }
-        if (error) { [weakSelf showError:error]; return; }
-        weakSelf.detailLabel.text = data.detailText;
-        weakSelf.voltageLabel.text = [NSString stringWithFormat:@"%.1f V", data.totalVoltage];
-        weakSelf.currentLabel.text = [NSString stringWithFormat:@"%.1f A", data.totalCurrent];
-        weakSelf.socLabel.text = [NSString stringWithFormat:@"%lu %%", (unsigned long)data.displaySOC];
-        weakSelf.mosLabel.text = [NSString stringWithFormat:@"MOS：充电%@  放电%@  预充%@",
-                                  data.chargeMOSOn ? @"闭合" : @"断开",
-                                  data.dischargeMOSOn ? @"闭合" : @"断开",
-                                  data.prechargeMOSOn ? @"闭合" : @"断开"];
-        weakSelf.temperatureLabel.text = [NSString stringWithFormat:@"温度：MOS %ld℃  环境 %ld℃",
-                                          (long)data.MOSTemperature, (long)data.ambientTemperature];
-        NSString *faults = data.faultDescriptions.count ? [data.faultDescriptions componentsJoinedByString:@"、"] : @"无";
-        weakSelf.alarmLabel.text = [NSString stringWithFormat:@"报警：%@（等级 %lu，位图 0x%04X）",
-                                    faults, (unsigned long)data.faultLevel, data.faultBits];
-        weakSelf.alarmLabel.textColor = data.faultLevel == 0 ? UIColor.systemGreenColor : UIColor.systemRedColor;
-        [weakSelf appendLog:[NSString stringWithFormat:@"实时数据：%.1fV，%.1fA，SOC %lu%%，故障位图 0x%04X",
-                             data.totalVoltage, data.totalCurrent, (unsigned long)data.displaySOC, data.faultBits]];
-    }];
-}
-
 - (void)readHistoryTapped {
     if (![self requireConnection]) { return; }
-    // 弹窗期间停止轮询，避免用户确认时正好存在另一条请求。
-    self.autoRefreshSwitch.on = NO;
-    [self refreshChanged];
     BMSClient *requestClient = self.client;
     __weak typeof(self) weakSelf = self;
     [self.client readHistoryCount:^(NSNumber *count, NSError *error) {
@@ -344,68 +310,19 @@
     }];
 }
 
-- (void)refreshChanged {
-    [self.refreshTimer invalidate];
-    self.refreshTimer = nil;
-    if (!self.autoRefreshSwitch.on) { return; }
-    if (![self requireConnection]) { self.autoRefreshSwitch.on = NO; return; }
-    __weak typeof(self) weakSelf = self;
-    self.refreshTimer = [NSTimer scheduledTimerWithTimeInterval:10 repeats:YES block:^(NSTimer *timer) {
-        if (!weakSelf.client.isBusy) { [weakSelf readDataTapped]; }
-    }];
-}
-
-- (void)readInformationTapped {
-    if (![self requireConnection]) { return; }
-    BMSClient *client = self.client;
-    __weak typeof(self) weakSelf = self;
-    [client readDeviceInformation:^(NSDictionary *info, NSError *error) {
-        if (weakSelf.client != client) { return; }
-        if (error) { [weakSelf showError:error]; return; }
-        weakSelf.informationLabel.text = [NSString stringWithFormat:@"软件：%@\n硬件：%@\n编号：%@\n设备时间：%@\n零电流原始值：%@ · 自检原始值：%@", info[@"software"], info[@"hardware"], info[@"identifier"], info[@"time"], info[@"zeroCurrent"], info[@"selfTest"]];
-    }];
-}
-
-- (void)readParametersTapped {
-    if (![self requireConnection]) { return; }
-    BMSClient *client = self.client;
-    __weak typeof(self) weakSelf = self;
-    [client readCommonParameters:^(NSArray *items, NSError *error) {
-        if (weakSelf.client != client) { return; }
-        if (error) { [weakSelf showError:error]; return; }
-        NSMutableArray *lines = NSMutableArray.array;
-        for (NSDictionary *item in items) {
-            [lines addObject:[NSString stringWithFormat:@"D%@ %@：%@ %@（原始%@）%@", item[@"address"], item[@"name"], item[@"value"], item[@"unit"], item[@"raw"], [item[@"valid"] boolValue] ? @"" : @" [超出文档范围]"]];
-        }
-        weakSelf.parameterLabel.text = [lines componentsJoinedByString:@"\n"];
-    }];
-}
-
-- (void)openMOSTapped { [self setMOS:YES]; }
-- (void)closeMOSTapped { [self setMOS:NO]; }
-- (void)setMOS:(BOOL)on {
-    if (![self requireConnection]) { return; }
-    if (self.modeControl.selectedSegmentIndex == 1) {
-        // 表格只定义了 D80/0x0050 的“充电MOS控制”触发位，没有定义开启/关闭分别写什么值。
-        // 为避免误动作，实机模式不发送未经厂家确认的控制命令。
-        [self appendLog:@"实机MOS控制已保护：请厂家确认0x0050位5的开启/关闭写值后再启用"];
-        return;
-    }
-    __weak typeof(self) weakSelf = self;
-    // 演示寄存器地址为 0，实际地址需用设备寄存器表替换。
-    [self.client setRunningStatusAt:0 on:on completion:^(id result, NSError *error) {
-        if (error) { [weakSelf showError:error]; return; }
-        weakSelf.mosLabel.text = [NSString stringWithFormat:@"充电 MOS：%@", on ? @"闭合" : @"断开"];
-    }];
-}
-
 - (BOOL)requireConnection {
     if (self.client.transport.isConnected) { return YES; }
-    [self appendLog:@"请先连接设备"];
+    [self showError:[NSError errorWithDomain:@"BMS.Connection" code:1 userInfo:@{NSLocalizedDescriptionKey:@"请先在数据监控页面连接真实设备"}]];
     return NO;
 }
 
-- (void)showError:(NSError *)error { [self appendLog:[NSString stringWithFormat:@"错误：%@", error.localizedDescription]]; }
+- (void)showError:(NSError *)error {
+    [self appendLog:[NSString stringWithFormat:@"错误：%@", error.localizedDescription]];
+    if (self.presentedViewController) { return; }
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"读取提示" message:error.localizedDescription preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:nil]];
+    [self presentViewController:alert animated:YES completion:nil];
+}
 - (void)appendLog:(NSString *)line {
     NSString *time = [self.logDateFormatter stringFromDate:NSDate.date] ?: [NSDateFormatter localizedStringFromDate:NSDate.date dateStyle:NSDateFormatterNoStyle timeStyle:NSDateFormatterMediumStyle];
     NSString *record = [NSString stringWithFormat:@"[%@] %@\n", time, line];

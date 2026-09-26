@@ -21,6 +21,12 @@ typedef void (^BMSClientLogHandler)(NSString *line);
 /// 传工程量（温度℃、容量Ah等），检查范围后写入并回读校验。
 - (void)writeCommonParameterAt:(uint16_t)address engineeringValue:(double)value completion:(BMSClientCompletion)completion;
 
+/// D336: 0 三元锂、1 磷酸铁锂。写入、单项回读，再读取完整参数并核对类型。
+/// 返回设备实际参数数组；“测试”编码未确认，不允许猜测写入。
+- (void)changeBatteryType:(NSInteger)type completion:(BMSClientCompletion)completion;
+
+/// 连接失效时清空未完成请求和分包，旧超时不影响新请求。
+- (void)cancelPendingRequest;
 - (instancetype)initWithTransport:(id<BMSByteTransport>)transport;
 /// 按旧APP抓包读取0x0060~0x00B5共86个寄存器，返回已换算的实时快照。
 - (void)readRealtimeData:(BMSClientCompletion)completion;

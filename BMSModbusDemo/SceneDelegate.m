@@ -7,7 +7,7 @@
     if (![scene isKindOfClass:UIWindowScene.class]) { return; }
     self.window = [[UIWindow alloc] initWithWindowScene:(UIWindowScene *)scene];
     ViewController *root = [[ViewController alloc] init];
-    self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:root];
+    self.window.rootViewController = root;
     [self.window makeKeyAndVisible];
 }
 

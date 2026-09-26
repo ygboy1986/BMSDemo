@@ -112,4 +112,92 @@
     return self;
 }
 
+- (NSDictionary<NSString *, NSString *> *)monitorValuesForCellCount:(NSNumber *)cellCount {
+    if (self.rawRegisters.count != 86) { return @{}; }
+    NSArray<NSNumber *> *r = self.rawRegisters;
+    NSMutableDictionary *v = NSMutableDictionary.dictionary;
+    NSString *(^number)(NSUInteger, NSUInteger, double, double, NSString *) = ^NSString *(NSUInteger i, NSUInteger max, double scale, double offset, NSString *unit) {
+        NSUInteger raw = r[i].unsignedIntegerValue;
+        if (raw > max) { return @"—"; }
+        return [NSString stringWithFormat:@"%g%@", raw * scale + offset, unit];
+    };
+    v[@"voltage"] = r[51].unsignedIntegerValue <= 60000 ? [NSString stringWithFormat:@"%.3f V", self.totalVoltage] : @"—";
+    v[@"current"] = r[50].unsignedIntegerValue <= 20000 ? [NSString stringWithFormat:@"%.3f A", self.totalCurrent] : @"—";
+    v[@"power"] = r[51].unsignedIntegerValue <= 60000 && r[50].unsignedIntegerValue <= 20000 ? [NSString stringWithFormat:@"%.1f W", self.totalVoltage * self.totalCurrent] : @"—";
+    v[@"soc"] = self.displaySOC <= 100 ? [NSString stringWithFormat:@"%lu%%", (unsigned long)self.displaySOC] : @"—";
+    v[@"soh"] = number(47, 100, 1, 0, @"%");
+    // 工作状态字缺少枚举定义，不能用电流方向或 MOS 状态冒充设备状态。
+    v[@"mode"] = @"待确认"; v[@"state"] = @"待确认"; v[@"remaining"] = @"—";
+    v[@"count"] = cellCount && cellCount.integerValue >= 1 && cellCount.integerValue <= 32 ? [NSString stringWithFormat:@"%@ S", cellCount] : @"—";
+    v[@"maxVoltage"] = @"—"; v[@"minVoltage"] = @"—"; v[@"difference"] = @"—";
+    v[@"maxIndex"] = @"—"; v[@"minIndex"] = @"—";
+    // 根据设备配置的有效串数计算，同一 CRC 校验通过的快照内计算，0mV 也是读数。
+    NSInteger count = cellCount.integerValue;
+    if (count >= 1 && count <= 32) {
+        NSInteger high = -1, low = 6001; NSUInteger highIndex = 0, lowIndex = 0; BOOL valid = YES;
+        for (NSUInteger i = 0; i < (NSUInteger)count; i++) {
+            NSInteger raw = r[8+i].integerValue;
+            if (raw > 6000) { valid = NO; break; }
+            if (raw > high) { high = raw; highIndex = i+1; }
+            if (raw < low) { low = raw; lowIndex = i+1; }
+        }
+        if (valid) {
+            v[@"maxVoltage"] = [NSString stringWithFormat:@"%ld mV", (long)high];
+            v[@"minVoltage"] = [NSString stringWithFormat:@"%ld mV", (long)low];
+            v[@"difference"] = [NSString stringWithFormat:@"%ld mV", (long)(high-low)];
+            v[@"maxIndex"] = @(highIndex).stringValue; v[@"minIndex"] = @(lowIndex).stringValue;
+        }
+    }
+    v[@"ambient"] = number(71, 250, 1, -40, @"℃");
+    v[@"mosTemp"] = number(70, 250, 1, -40, @"℃");
+    // 不排除 0℃ 探针，不猜测哪些探针已安装。
+    NSInteger highT = -41, lowT = 211; BOOL validT = YES;
+    for (id temperature in self.probeTemperatures) {
+        if (temperature == NSNull.null) { validT = NO; break; }
+        highT = MAX(highT, [temperature integerValue]); lowT = MIN(lowT, [temperature integerValue]);
+    }
+    v[@"maxTemp"] = validT ? [NSString stringWithFormat:@"%ld℃", (long)highT] : @"—";
+    v[@"minTemp"] = validT ? [NSString stringWithFormat:@"%ld℃", (long)lowT] : @"—";
+    for (NSUInteger i=0; i<6; i++) { v[[NSString stringWithFormat:@"probe%lu", (unsigned long)i]] = number(40+i, 250, 1, -40, @"℃"); }
+    for (NSUInteger i=0; i<5; i++) {
+        NSInteger raw = r[81+i].integerValue;
+        v[[NSString stringWithFormat:@"mos%lu", (unsigned long)i]] = raw == 0 ? @"断开" : raw == 1 ? @"闭合" : [NSString stringWithFormat:@"未知(%ld)", (long)raw];
+    }
+    v[@"cycles"] = number(54, 65533, 1, 0, @"次");
+    return v.copy;
+}
+
+- (NSString *)balanceTextForCell:(NSUInteger)index {
+    // D159/160 已保留，但缺少“位→电芯”的映射，不能把未知状态显示为未均衡。
+    return @"待确认";
+}
+
+- (NSArray<NSDictionary<NSString *,NSString *> *> *)alarmRows {
+    NSArray *names = @[@"充电过压报警", @"放电欠压报警", @"充电过流报警", @"放电过流报警1", @"放电过流报警2", @"短路报警", @"充电高温报警", @"充电低温报警", @"放电高温报警", @"放电低温报警", @"压差异常报警", @"DC-DC温度报警", @"SOC低报警", @"绝缘报警"];
+    NSMutableArray *rows = NSMutableArray.array;
+    for (NSUInteger bit=0; bit<names.count; bit++) {
+        BOOL unknown = self.faultBits >= 0xFFFE;
+        BOOL active = (self.faultBits & (1U << bit)) != 0;
+        [rows addObject:@{@"name":names[bit], @"state":unknown ? @"未知" : active ? @"报警" : @"正常"}];
+    }
+    return rows.copy;
+}
+
+- (NSString *)diagnosticText {
+    if (self.rawRegisters.count != 86) { return @"实时区未读取"; }
+    NSMutableArray *lines = NSMutableArray.array;
+    [lines addObject:@"【实时区解析】D96～D181，86个寄存器，CRC通过；字节位置从完整响应0开始计数"];
+    NSDictionary *descriptions = @{@142:@"SOC：高字节真实值，低字节显示值", @143:@"SOH (%)", @146:@"电流：raw×0.1−1000 A", @147:@"总电压：raw×0.1 V", @150:@"循环次数", @159:@"均衡原始字1：位映射待确认", @160:@"均衡原始字2：位映射待确认", @161:@"工作状态原始字1：枚举待确认", @162:@"工作状态原始字2：枚举待确认", @163:@"报警位图：当前按Ver1.4主表，附录地址冲突待确认", @164:@"报警等级", @166:@"MOS温度：raw−40 ℃", @167:@"环境温度：raw−40 ℃"};
+    for (NSUInteger i=0; i<86; i++) {
+        NSUInteger address = 96+i; uint16_t raw = self.rawRegisters[i].unsignedShortValue;
+        NSString *meaning = descriptions[@(address)] ?: @"保留原始值";
+        if (address>=104 && address<=135) { meaning = [NSString stringWithFormat:@"电芯%lu：%u mV", (unsigned long)address-103, raw]; }
+        if (address>=136 && address<=141) { meaning = [NSString stringWithFormat:@"探针%lu：%@", (unsigned long)address-135, raw<=250 ? [NSString stringWithFormat:@"%d ℃", raw-40] : @"无效/异常"]; }
+        if (address>=177) { meaning = @"MOS：0断开/1闭合，其他未知"; }
+        [lines addObject:[NSString stringWithFormat:@"D%lu(0x%04lX) | 字节[%lu..%lu]=%02X %02X | 原始=%u(0x%04X) | %@", (unsigned long)address, (unsigned long)address, (unsigned long)(4+2*i), (unsigned long)(5+2*i), raw>>8, raw&255, raw, raw, meaning]];
+    }
+    [lines addObject:@"最高/最低电压及串号：按D335配置串数，从本次单节电压计算；压差=最高−最低。探针最高/最低：计算全部6路，保留0℃，不推断探针数量。功率=总电压×电流。剩余时间暂未确认来源。"];
+    return [lines componentsJoinedByString:@"\n"];
+}
+
 @end
